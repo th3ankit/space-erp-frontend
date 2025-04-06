@@ -1,109 +1,90 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const UploadPage = () => {
-  const [formData, setFormData] = useState({
-    schoolName: "",
-    activity: "",
-    comments: "",
-    date: "",
-  });
+function UploadPage() {
+  const [school, setSchool] = useState("");
+  const [date, setDate] = useState("");
+  const [activity, setActivity] = useState("");
+  const [comments, setComments] = useState("");
   const [photos, setPhotos] = useState([]);
-  const [message, setMessage] = useState("");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const api = process.env.REACT_APP_API_BASE_URL;
 
   const handlePhotoChange = (e) => {
-    setPhotos(e.target.files);
+    const files = Array.from(e.target.files);
+    if (files.length > 3) {
+      alert("You can only upload up to 3 photos.");
+      return;
+    }
+    setPhotos(files);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("Uploading...");
+    const formData = new FormData();
+    formData.append("school", school);
+    formData.append("date", date);
+    formData.append("activity", activity);
+    formData.append("comments", comments);
+    photos.forEach((photo) => {
+      formData.append("photos", photo);
+    });
 
     try {
-      const data = new FormData();
-      data.append("schoolName", formData.schoolName);
-      data.append("activity", formData.activity);
-      data.append("comments", formData.comments);
-      data.append("date", formData.date);
-      for (let i = 0; i < photos.length; i++) {
-        data.append("photos", photos[i]);
-      }
-
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/photos/upload`,
-        data
-      );
-
-      if (res.status === 200) {
-        setMessage("✅ Uploaded Successfully!");
-      } else {
-        setMessage("❌ Upload failed!");
-      }
+      const response = await axios.post(`${api}/api/photos/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert("✅ Report uploaded successfully!");
     } catch (error) {
       console.error("Upload error:", error);
-      setMessage("❌ An error occurred during upload.");
+      alert("❌ An error occurred during upload.");
     }
   };
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">Upload Daily Report</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div style={{ padding: "20px" }}>
+      <h2>Upload Report</h2>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
-          name="schoolName"
           placeholder="School Name"
-          value={formData.schoolName}
-          onChange={handleChange}
+          value={school}
+          onChange={(e) => setSchool(e.target.value)}
           required
-          className="w-full p-2 border rounded"
         />
-        <input
-          type="text"
-          name="activity"
-          placeholder="Activity"
-          value={formData.activity}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border rounded"
-        />
-        <textarea
-          name="comments"
-          placeholder="Comments"
-          value={formData.comments}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
+        <br />
         <input
           type="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
           required
-          className="w-full p-2 border rounded"
         />
+        <br />
+        <input
+          type="text"
+          placeholder="Activity"
+          value={activity}
+          onChange={(e) => setActivity(e.target.value)}
+          required
+        />
+        <br />
+        <textarea
+          placeholder="Comments"
+          value={comments}
+          onChange={(e) => setComments(e.target.value)}
+        />
+        <br />
         <input
           type="file"
-          name="photos"
           multiple
           accept="image/*"
           onChange={handlePhotoChange}
-          className="w-full"
         />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Upload
-        </button>
+        <br />
+        <button type="submit">Submit Report</button>
       </form>
-      {message && <p className="mt-4">{message}</p>}
     </div>
   );
-};
+}
 
 export default UploadPage;
