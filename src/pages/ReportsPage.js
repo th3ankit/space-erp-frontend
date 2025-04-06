@@ -1,57 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import React, { useRef } from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-const ReportsPage = () => {
-  const [reports, setReports] = useState([]);
+function ReportsPage() {
+  const reportRef = useRef();
 
-  // Fetch reports when the component mounts
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const response = await axios.get('/api/reports'); // Replace with your API URL if needed
-        setReports(response.data);
-      } catch (error) {
-        console.error('Error fetching reports', error);
-      }
-    };
-
-    fetchReports();
-  }, []);
-
-  // Function to generate PDF from the report
-  const generatePDF = () => {
-    const input = document.getElementById('report-container');
+  const handleDownloadPDF = () => {
+    const input = reportRef.current;
     html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const doc = new jsPDF();
-      doc.addImage(imgData, 'PNG', 10, 10);
-      doc.save('report.pdf');
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
+      pdf.save("report.pdf");
     });
   };
 
   return (
-    <div>
-      <h2>Reports</h2>
-      
-      {/* Button to generate PDF */}
-      <button onClick={generatePDF}>Download PDF</button>
+    <div style={{ padding: "20px" }}>
+      <h2>Reports Page 📊</h2>
 
-      {/* Container for reports */}
-      <div id="report-container">
-        {reports.length === 0 ? (
-          <p>No reports available.</p>
-        ) : (
-          <ul>
-            {reports.map((report, index) => (
-              <li key={index}>{report.title}</li>
-            ))}
-          </ul>
-        )}
+      <div
+        ref={reportRef}
+        style={{
+          background: "#f2f2f2",
+          padding: "20px",
+          marginTop: "20px",
+          borderRadius: "8px",
+        }}
+      >
+        <h3>Graph or Report Section</h3>
+        <p>This is the content that will be converted to PDF.</p>
+        {/* You can add chart or log data here */}
       </div>
+
+      <button
+        onClick={handleDownloadPDF}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          backgroundColor: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Download PDF
+      </button>
     </div>
   );
-};
+}
 
 export default ReportsPage;
