@@ -1,23 +1,18 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import UploadPage from "./pages/UploadPage";
 import LogsPage from "./pages/LogsPage";
+import UploadPage from "./pages/UploadPage";
 import ReportsPage from "./pages/ReportsPage";
+import GraphPage from "./pages/GraphPage";
 
 function App() {
   return (
     <Router>
-      <div>
-        <h1>Welcome to the Space Education ERP App 🚀</h1>
-        <Routes>
-          <Route path="/" element={<p>Select a page from the menu</p>} />
-          <Route path="/upload" element={<UploadPage />} />
-          <Route path="/logs" element={<LogsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<UploadPage />} />
+        <Route path="/logs" element={<LogsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/graphs" element={<GraphPage />} />
+      </Routes>
     </Router>
   );
 }
-
-export default App;
