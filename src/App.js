@@ -1,4 +1,3 @@
-// src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import UploadPage from "./pages/UploadPage";
@@ -8,22 +7,35 @@ import ReportsPage from "./pages/ReportsPage";
 function App() {
   return (
     <Router>
-      <div className="app">
-        <nav style={{ padding: '10px', background: '#f0f0f0' }}>
-          <Link to="/upload" style={{ marginRight: '10px' }}>Upload Report</Link>
-          <Link to="/logs" style={{ marginRight: '10px' }}>Session Logs</Link>
-          <Link to="/reports">Reports</Link>
-        </nav>
+      <nav style={navStyle}>
+        <Link to="/" style={linkStyle}>Upload</Link>
+        <Link to="/logs" style={linkStyle}>Logs</Link>
+        <Link to="/reports" style={linkStyle}>Reports</Link>
+      </nav>
 
+      <div style={{ padding: "2rem" }}>
         <Routes>
-          <Route path="/upload" element={<UploadPage />} />
+          <Route path="/" element={<UploadPage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/" element={<h2 style={{ padding: '20px' }}>Welcome to Space Education ERP App 🚀</h2>} />
         </Routes>
       </div>
     </Router>
   );
 }
+
+const navStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: "2rem",
+  padding: "1rem",
+  backgroundColor: "#f0f0f0",
+  fontWeight: "bold"
+};
+
+const linkStyle = {
+  textDecoration: "none",
+  color: "#333"
+};
 
 export default App;
