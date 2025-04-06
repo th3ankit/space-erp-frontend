@@ -1,33 +1,18 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import ReportsPage from './pages/ReportsPage';
-import UploadPage from './pages/UploadPage';
-import LogsPage from './pages/LogsPage';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import UploadPage from "./pages/UploadPage";
+import LogsPage from "./pages/LogsPage";
+import ReportsPage from "./pages/ReportsPage";
 
 function App() {
   return (
     <Router>
-      <div>
-        <h1>Welcome to the Space Education ERP App 🚀</h1>
-        <p>This is the frontend setup in React.</p>
-        {/* Add the navigation menu */}
-        <nav>
-          <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/reports">Reports</a></li>
-            <li><a href="/upload">Upload</a></li>
-            <li><a href="/logs">Logs</a></li>
-          </ul>
-        </nav>
-
-        {/* Define your Routes */}
-        <Routes>
-          <Route path="/" element={<h2>Home Page</h2>} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/upload" element={<UploadPage />} />
-          <Route path="/logs" element={<LogsPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<h1>Welcome to the ERP App 🚀</h1>} />
+        <Route path="/upload" element={<UploadPage />} />
+        <Route path="/logs" element={<LogsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+      </Routes>
     </Router>
   );
 }
