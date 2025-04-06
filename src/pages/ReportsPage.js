@@ -1,45 +1,81 @@
-import React, { useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-function ReportsPage({ reportData }) {
+const ReportsPage = () => {
+  const [reports, setReports] = useState([]);
+  const [schoolCounts, setSchoolCounts] = useState([]);
   const reportRef = useRef();
 
-  const handleDownloadPDF = () => {
-    const input = reportRef.current;
-    const schoolName = reportData?.schoolName || "Unknown_School";
-    const safeSchoolName = schoolName.replace(/\s+/g, "_"); // remove spaces
-    const fileName = `Report_${safeSchoolName}.pdf`;
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos`);
+        setReports(res.data);
 
-    html2canvas(input).then((canvas) => {
+        // Count reports per school
+        const counts = {};
+        res.data.forEach((report) => {
+          counts[report.schoolName] = (counts[report.schoolName] || 0) + 1;
+        });
+
+        const formatted = Object.entries(counts).map(([school, count]) => ({
+          school,
+          count,
+        }));
+
+        setSchoolCounts(formatted);
+      } catch (err) {
+        console.error("Error fetching reports:", err);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  const generatePDF = () => {
+    const schoolName = reports.length > 0 ? reports[0].schoolName : "report";
+    html2canvas(reportRef.current).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF();
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(fileName);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 190;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      pdf.save(`${schoolName.replace(/\s+/g, "_")}_Report.pdf`);
     });
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Report Page</h2>
-      <div ref={reportRef} className="bg-white p-4 shadow rounded">
-        <p><strong>School Name:</strong> {reportData?.schoolName}</p>
-        <p><strong>Session Date:</strong> {reportData?.date}</p>
-        <p><strong>Educator:</strong> {reportData?.educator}</p>
-        <p><strong>Highlights:</strong> {reportData?.highlights}</p>
-        {/* Add more fields as needed */}
+    <div style={{ padding: "2rem" }}>
+      <h2>📈 School-wise Session Reports</h2>
+
+      <div ref={reportRef} style={{ background: "#fff", padding: "20px", borderRadius: "8px" }}>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={schoolCounts}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="school" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="count" fill="#8884d8" />
+          </BarChart>
+        </ResponsiveContainer>
+
+        <ul style={{ marginTop: "2rem" }}>
+          {schoolCounts.map((item, index) => (
+            <li key={index}>
+              <strong>{item.school}:</strong> {item.count} session(s)
+            </li>
+          ))}
+        </ul>
       </div>
-      <button
-        onClick={handleDownloadPDF}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-      >
-        Download PDF
+
+      <button onClick={generatePDF} style={{ marginTop: "2rem", padding: "10px 20px" }}>
+        📥 Download PDF
       </button>
     </div>
   );
-}
+};
 
 export default ReportsPage;
