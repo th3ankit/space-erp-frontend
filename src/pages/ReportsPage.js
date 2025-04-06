@@ -2,52 +2,39 @@ import React, { useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-function ReportsPage() {
+function ReportsPage({ reportData }) {
   const reportRef = useRef();
 
   const handleDownloadPDF = () => {
     const input = reportRef.current;
+    const schoolName = reportData?.schoolName || "Unknown_School";
+    const safeSchoolName = schoolName.replace(/\s+/g, "_"); // remove spaces
+    const fileName = `Report_${safeSchoolName}.pdf`;
+
     html2canvas(input).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      const pdf = new jsPDF();
       const imgProps = pdf.getImageProperties(imgData);
-      const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
-      pdf.save("report.pdf");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(fileName);
     });
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Reports Page 📊</h2>
-
-      <div
-        ref={reportRef}
-        style={{
-          background: "#f2f2f2",
-          padding: "20px",
-          marginTop: "20px",
-          borderRadius: "8px",
-        }}
-      >
-        <h3>Graph or Report Section</h3>
-        <p>This is the content that will be converted to PDF.</p>
-        {/* You can add chart or log data here */}
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Report Page</h2>
+      <div ref={reportRef} className="bg-white p-4 shadow rounded">
+        <p><strong>School Name:</strong> {reportData?.schoolName}</p>
+        <p><strong>Session Date:</strong> {reportData?.date}</p>
+        <p><strong>Educator:</strong> {reportData?.educator}</p>
+        <p><strong>Highlights:</strong> {reportData?.highlights}</p>
+        {/* Add more fields as needed */}
       </div>
-
       <button
         onClick={handleDownloadPDF}
-        style={{
-          marginTop: "20px",
-          padding: "10px 20px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
       >
         Download PDF
       </button>
