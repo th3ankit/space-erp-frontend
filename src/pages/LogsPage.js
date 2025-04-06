@@ -1,30 +1,40 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const LogsPage = () => {
+function LogsPage() {
   const [logs, setLogs] = useState([]);
-  const baseURL = process.env.REACT_APP_API_BASE_URL;
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get(`${baseURL}/api/logs`)
+    const baseURL = process.env.REACT_APP_API_BASE_URL;
+
+    axios
+      .get(`${baseURL}/api/logs`)
       .then((response) => {
         setLogs(response.data);
       })
       .catch((error) => {
         console.error("Error fetching logs:", error);
+        setError("Unable to load logs right now.");
       });
-  }, [baseURL]);
+  }, []);
 
   return (
     <div>
-      <h2>Activity Logs</h2>
-      <ul>
-        {logs.map((log, index) => (
-          <li key={index}>{log.activity} - {log.date}</li>
-        ))}
-      </ul>
+      <h2>Logs Page</h2>
+      {error ? (
+        <p style={{ color: "red" }}>{error}</p>
+      ) : logs.length > 0 ? (
+        <ul>
+          {logs.map((log, index) => (
+            <li key={index}>{log.description}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>Loading logs...</p>
+      )}
     </div>
   );
-};
+}
 
 export default LogsPage;
