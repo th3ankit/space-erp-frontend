@@ -1,18 +1,24 @@
-import React, { useEffect } from "react";
-import axios from "axios";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import UploadPage from "./pages/UploadPage";
+import LogsPage from "./pages/LogsPage";
+import ReportsPage from "./pages/ReportsPage";
 
 function App() {
-  useEffect(() => {
-    axios.get(`${process.env.REACT_APP_API_URL}/api/hello`)
-      .then(res => console.log("Backend says:", res.data))
-      .catch(err => console.error("Error connecting to API:", err));
-  }, []);
-
   return (
-    <div>
-      <h1>Welcome to the Space Education ERP App 🚀</h1>
-      <p>This is the frontend setup in React, now connected to the backend.</p>
-    </div>
+    <Router>
+      <div>
+        <h1>🚀 Space Education ERP App</h1>
+        <nav>
+          <Link to="/upload">Upload</Link> | <Link to="/logs">Logs</Link> | <Link to="/reports">Reports</Link>
+        </nav>
+        <Routes>
+          <Route path="/upload" element={<UploadPage />} />
+          <Route path="/logs" element={<LogsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
