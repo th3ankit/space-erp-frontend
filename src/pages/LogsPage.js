@@ -1,40 +1,76 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function LogsPage() {
-  const [logs, setLogs] = useState([]);
+const LogsPage = () => {
+  const [reports, setReports] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const baseURL = process.env.REACT_APP_API_BASE_URL;
+  const fetchReports = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos`);
+      setReports(response.data);
+    } catch (err) {
+      console.error("Error fetching reports:", err);
+      setError("Failed to load reports.");
+    }
+  };
 
-    axios
-      .get(`${baseURL}/api/logs`)
-      .then((response) => {
-        setLogs(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching logs:", error);
-        setError("Unable to load logs right now.");
-      });
+  useEffect(() => {
+    fetchReports();
   }, []);
 
+  const filteredReports = reports.filter((report) =>
+    report.schoolName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div>
-      <h2>Logs Page</h2>
-      {error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : logs.length > 0 ? (
-        <ul>
-          {logs.map((log, index) => (
-            <li key={index}>{log.description}</li>
+    <div style={{ padding: "2rem" }}>
+      <h2>Session Logs 📋</h2>
+
+      <input
+        type="text"
+        placeholder="Search by School Name"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{ padding: "8px", marginBottom: "1rem", width: "300px" }}
+      />
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <table border="1" cellPadding="10" style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th>School</th>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>Comments</th>
+            <th>Photos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredReports.map((report) => (
+            <tr key={report._id}>
+              <td>{report.schoolName}</td>
+              <td>{new Date(report.date).toLocaleDateString()}</td>
+              <td>{report.activity}</td>
+              <td>{report.comments}</td>
+              <td>
+                {report.photos.map((photo, index) => (
+                  <img
+                    key={index}
+                    src={photo}
+                    alt="Session"
+                    style={{ width: "50px", height: "50px", marginRight: "5px" }}
+                  />
+                ))}
+              </td>
+            </tr>
           ))}
-        </ul>
-      ) : (
-        <p>Loading logs...</p>
-      )}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
 
 export default LogsPage;
