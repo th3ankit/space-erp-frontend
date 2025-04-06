@@ -1,37 +1,41 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
-function ReportsPage() {
-  const [reportData, setReportData] = useState(null);
-  const [error, setError] = useState(null);
+const ReportsPage = () => {
+  const [reportData, setReportData] = useState([]);
 
   useEffect(() => {
-    const baseURL = process.env.REACT_APP_API_BASE_URL;
+    const fetchReports = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/reports`);
+        setReportData(res.data);
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+      }
+    };
 
-    axios
-      .get(`${baseURL}/api/reports`)
-      .then((response) => {
-        setReportData(response.data);
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Error fetching report:", error);
-        setError("Could not load reports. Please try again.");
-      });
+    fetchReports();
   }, []);
 
-  return (
-    <div>
-      <h2>Reports Page</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {reportData ? (
-        <pre>{JSON.stringify(reportData, null, 2)}</pre>
-      ) : (
-        !error && <p>Loading reports...</p>
-      )}
-    </div>
-  );
-}
+  const downloadPDF = () => {
+    const input = document.getElementById("report-section");
+    if (!input) return;
 
-export default ReportsPage;
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.save("report.pdf");
+    });
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h1>Reports</h1>
+
+      <div id
