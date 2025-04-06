@@ -12,6 +12,9 @@ const NavBar = () => {
         <Link className={location.pathname === "/" ? "active" : ""} to="/">Upload</Link>
         <Link className={location.pathname === "/logs" ? "active" : ""} to="/logs">Logs</Link>
         <Link className={location.pathname === "/reports" ? "active" : ""} to="/reports">Reports</Link>
+  <Link className={location.pathname === "/" ? "active" : ""} to="/">Home</Link>
+<Link className={location.pathname === "/upload" ? "active" : ""} to="/upload">Upload</Link>
+
       </div>
     </nav>
   );
