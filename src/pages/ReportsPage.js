@@ -1,79 +1,62 @@
-import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const ReportsPage = () => {
-  const [reports, setReports] = useState([]);
-  const [schoolCounts, setSchoolCounts] = useState([]);
-  const reportRef = useRef();
+  const [logs, setLogs] = useState([]);
+  const reportRef = useRef(null);
 
   useEffect(() => {
-    const fetchReports = async () => {
+    const fetchLogs = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos`);
-        setReports(res.data);
-
-        // Count reports per school
-        const counts = {};
-        res.data.forEach((report) => {
-          counts[report.schoolName] = (counts[report.schoolName] || 0) + 1;
-        });
-
-        const formatted = Object.entries(counts).map(([school, count]) => ({
-          school,
-          count,
-        }));
-
-        setSchoolCounts(formatted);
-      } catch (err) {
-        console.error("Error fetching reports:", err);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/photos`);
+        setLogs(response.data);
+      } catch (error) {
+        console.error('Error fetching reports:', error);
       }
     };
 
-    fetchReports();
+    fetchLogs();
   }, []);
 
-  const generatePDF = () => {
-    const schoolName = reports.length > 0 ? reports[0].schoolName : "report";
-    html2canvas(reportRef.current).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 190;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save(`${schoolName.replace(/\s+/g, "_")}_Report.pdf`);
+  const handleDownload = () => {
+    const input = reportRef.current;
+    if (!input) return;
+
+    html2canvas(input, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = 210;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('session-report.pdf');
     });
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>📈 School-wise Session Reports</h2>
-
-      <div ref={reportRef} style={{ background: "#fff", padding: "20px", borderRadius: "8px" }}>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={schoolCounts}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="school" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="count" fill="#8884d8" />
-          </BarChart>
-        </ResponsiveContainer>
-
-        <ul style={{ marginTop: "2rem" }}>
-          {schoolCounts.map((item, index) => (
-            <li key={index}>
-              <strong>{item.school}:</strong> {item.count} session(s)
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <button onClick={generatePDF} style={{ marginTop: "2rem", padding: "10px 20px" }}>
-        📥 Download PDF
+    <div style={{ padding: '2rem' }}>
+      <h2>📄 Download Session Report</h2>
+      <button onClick={handleDownload} style={{ marginBottom: '1rem', padding: '0.5rem 1rem' }}>
+        Download PDF
       </button>
+
+      <div ref={reportRef} style={{ background: '#fff', padding: '1rem' }}>
+        {logs.map((log) => (
+          <div key={log._id} style={{ marginBottom: '1.5rem', borderBottom: '1px solid #ccc', paddingBottom: '1rem' }}>
+            <h3>{log.schoolName}</h3>
+            <p><strong>Date:</strong> {new Date(log.sessionDate).toLocaleDateString()}</p>
+            <p><strong>Activity:</strong> {log.activity}</p>
+            <p><strong>Comments:</strong> {log.comments}</p>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {log.photoUrls?.map((url, idx) => (
+                <img key={idx} src={url} alt={`img-${idx}`} width="100" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
