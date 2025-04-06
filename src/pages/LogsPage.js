@@ -1,74 +1,51 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const LogsPage = () => {
-  const [reports, setReports] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState(null);
-
-  const fetchReports = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos`);
-      setReports(response.data);
-    } catch (err) {
-      console.error("Error fetching reports:", err);
-      setError("Failed to load reports.");
-    }
-  };
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchReports();
+    const fetchLogs = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/photos`);
+        setLogs(response.data);
+      } catch (error) {
+        console.error('Error fetching logs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLogs();
   }, []);
 
-  const filteredReports = reports.filter((report) =>
-    report.schoolName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Session Logs 📋</h2>
-
-      <input
-        type="text"
-        placeholder="Search by School Name"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        style={{ padding: "8px", marginBottom: "1rem", width: "300px" }}
-      />
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <table border="1" cellPadding="10" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th>School</th>
-            <th>Date</th>
-            <th>Activity</th>
-            <th>Comments</th>
-            <th>Photos</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredReports.map((report) => (
-            <tr key={report._id}>
-              <td>{report.schoolName}</td>
-              <td>{new Date(report.date).toLocaleDateString()}</td>
-              <td>{report.activity}</td>
-              <td>{report.comments}</td>
-              <td>
-                {report.photos.map((photo, index) => (
-                  <img
-                    key={index}
-                    src={photo}
-                    alt="Session"
-                    style={{ width: "50px", height: "50px", marginRight: "5px" }}
-                  />
-                ))}
-              </td>
-            </tr>
+    <div style={{ padding: '2rem' }}>
+      <h2>📚 Session Logs</h2>
+      {loading ? (
+        <p>Loading logs...</p>
+      ) : logs.length === 0 ? (
+        <p>No session reports found.</p>
+      ) : (
+        <div style={{ display: 'grid', gap: '1rem' }}>
+          {logs.map((log) => (
+            <div key={log._id} style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
+              <h3>{log.schoolName}</h3>
+              <p><strong>Date:</strong> {new Date(log.sessionDate).toLocaleDateString()}</p>
+              <p><strong>Activity:</strong> {log.activity}</p>
+              <p><strong>Comments:</strong> {log.comments}</p>
+              {log.photoUrls && log.photoUrls.length > 0 && (
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  {log.photoUrls.map((url, idx) => (
+                    <img key={idx} src={url} alt={`photo-${idx}`} width="120" style={{ borderRadius: '4px' }} />
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      )}
     </div>
   );
 };
