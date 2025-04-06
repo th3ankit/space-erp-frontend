@@ -1,47 +1,53 @@
+// src/pages/LogsPage.js
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const LogsPage = () => {
-  const [logs, setLogs] = useState([]);
+  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchLogs = async () => {
+    const fetchReports = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/photos`);
-        setLogs(response.data);
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/reports`);
+        setReports(response.data);
+        setLoading(false);
       } catch (error) {
-        console.error('Error fetching logs:', error);
-      } finally {
+        console.error('Error fetching reports:', error);
         setLoading(false);
       }
     };
 
-    fetchLogs();
+    fetchReports();
   }, []);
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>📚 Session Logs</h2>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Submitted Reports</h1>
+
       {loading ? (
-        <p>Loading logs...</p>
-      ) : logs.length === 0 ? (
-        <p>No session reports found.</p>
+        <p>Loading reports...</p>
+      ) : reports.length === 0 ? (
+        <p>No reports found.</p>
       ) : (
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          {logs.map((log) => (
-            <div key={log._id} style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
-              <h3>{log.schoolName}</h3>
-              <p><strong>Date:</strong> {new Date(log.sessionDate).toLocaleDateString()}</p>
-              <p><strong>Activity:</strong> {log.activity}</p>
-              <p><strong>Comments:</strong> {log.comments}</p>
-              {log.photoUrls && log.photoUrls.length > 0 && (
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                  {log.photoUrls.map((url, idx) => (
-                    <img key={idx} src={url} alt={`photo-${idx}`} width="120" style={{ borderRadius: '4px' }} />
-                  ))}
-                </div>
-              )}
+        <div className="grid gap-4">
+          {reports.map((report) => (
+            <div key={report._id} className="p-4 border rounded shadow">
+              <h2 className="font-semibold text-lg">{report.schoolName}</h2>
+              <p><strong>Date:</strong> {new Date(report.date).toLocaleDateString()}</p>
+              <p><strong>Activity:</strong> {report.activity}</p>
+              <p><strong>Comments:</strong> {report.comments}</p>
+              <div className="flex gap-2 mt-2">
+                {report.photos && report.photos.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Session ${index + 1}`}
+                    className="w-32 h-32 object-cover rounded"
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
