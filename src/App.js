@@ -7,12 +7,14 @@ import ReportsPage from "./pages/ReportsPage";
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<h1>Welcome to the ERP App 🚀</h1>} />
-        <Route path="/upload" element={<UploadPage />} />
-        <Route path="/logs" element={<LogsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-      </Routes>
+      <div>
+        <h1 style={{ textAlign: "center", marginTop: "20px" }}>🚀 Space ERP</h1>
+        <Routes>
+          <Route path="/" element={<UploadPage />} />
+          <Route path="/logs" element={<LogsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
