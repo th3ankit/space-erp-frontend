@@ -1,51 +1,71 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-function UploadPage() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState(null);
+const UploadPage = () => {
+  const [photos, setPhotos] = useState([]);
+  const [schoolName, setSchoolName] = useState("");
+  const [status, setStatus] = useState("");
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-    setMessage("");
-    setError(null);
+  const handleFileChange = (e) => {
+    setPhotos([...e.target.files].slice(0, 3)); // limit to 3 photos
   };
 
-  const handleUpload = () => {
-    if (!selectedFile) {
-      setError("Please select a file to upload.");
-      return;
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("Uploading...");
 
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    photos.forEach((photo) => {
+      formData.append("photos", photo);
+    });
+    formData.append("school", schoolName);
 
-    const baseURL = process.env.REACT_APP_API_BASE_URL;
-
-    axios
-      .post(`${baseURL}/api/upload`, formData)
-      .then((response) => {
-        setMessage("File uploaded successfully!");
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Upload error:", error);
-        setError("Upload failed. Please try again.");
-        setMessage("");
-      });
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/photos/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setStatus(`✅ Upload successful: ${response.data.photoUrls.length} photos`);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setStatus("❌ Upload failed");
+    }
   };
 
   return (
-    <div>
-      <h2>Upload Page</h2>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <div className="p-4">
+      <h2 className="text-xl font-semibold mb-4">📸 Upload Photos</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          value={schoolName}
+          onChange={(e) => setSchoolName(e.target.value)}
+          placeholder="Enter School Name"
+          required
+          className="border p-2 w-full"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          className="border p-2 w-full"
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Upload (Max 3 Photos)
+        </button>
+      </form>
+      {status && <p className="mt-4">{status}</p>}
     </div>
   );
-}
+};
 
 export default UploadPage;
-
