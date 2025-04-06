@@ -1,41 +1,57 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const ReportsPage = () => {
-  const [reportData, setReportData] = useState([]);
+  const [reports, setReports] = useState([]);
 
+  // Fetch reports when the component mounts
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/reports`);
-        setReportData(res.data);
+        const response = await axios.get('/api/reports'); // Replace with your API URL if needed
+        setReports(response.data);
       } catch (error) {
-        console.error("Error fetching reports:", error);
+        console.error('Error fetching reports', error);
       }
     };
 
     fetchReports();
   }, []);
 
-  const downloadPDF = () => {
-    const input = document.getElementById("report-section");
-    if (!input) return;
-
+  // Function to generate PDF from the report
+  const generatePDF = () => {
+    const input = document.getElementById('report-container');
     html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      pdf.save("report.pdf");
+      const imgData = canvas.toDataURL('image/png');
+      const doc = new jsPDF();
+      doc.addImage(imgData, 'PNG', 10, 10);
+      doc.save('report.pdf');
     });
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Reports</h1>
+    <div>
+      <h2>Reports</h2>
+      
+      {/* Button to generate PDF */}
+      <button onClick={generatePDF}>Download PDF</button>
 
-      <div id
+      {/* Container for reports */}
+      <div id="report-container">
+        {reports.length === 0 ? (
+          <p>No reports available.</p>
+        ) : (
+          <ul>
+            {reports.map((report, index) => (
+              <li key={index}>{report.title}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ReportsPage;
