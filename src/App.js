@@ -7,13 +7,16 @@ import ReportsPage from "./pages/ReportsPage";
 function App() {
   return (
     <Router>
-      <div>
-        <h1>🚀 Space Education ERP App</h1>
-        <nav>
-          <Link to="/upload">Upload</Link> | <Link to="/logs">Logs</Link> | <Link to="/reports">Reports</Link>
+      <div style={{ padding: "20px" }}>
+        <h1>🚀 Space Education ERP</h1>
+        <nav style={{ marginBottom: "20px" }}>
+          <Link to="/" style={{ marginRight: "10px" }}>Upload</Link>
+          <Link to="/logs" style={{ marginRight: "10px" }}>Logs</Link>
+          <Link to="/reports">Reports</Link>
         </nav>
+
         <Routes>
-          <Route path="/upload" element={<UploadPage />} />
+          <Route path="/" element={<UploadPage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
         </Routes>
